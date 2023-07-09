@@ -1,0 +1,209 @@
+---
+title: "R Basics Two"
+author: "Neko_Chan666"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    theme: journal
+    df_print: paged
+    css: style.css
+---
+[Part One](https://rpubs.com/Neko_Chan666/R_Basics_One) of the series ^_^
+
+Now lets talk about some scripts and functions.
+
+# Scripts
+As we see so far R is a statistical programming environment but R is also a functional programming environment. Lets start with some simple scripting.
+
+## Simple scripts
+If I put scripting in words then it will be different commands that are manipulated by conditions and loops to do a process automatic.
+```{r}
+x <- c("apple", "banana", "mango", "pineapple")
+```
+Now lets find the position of an element, lets say, "banana".
+```{r}
+position <- c() # An empty collection
+
+for (i in 1:length(x)){
+  if (x[i] == "banana"){
+    position <- c(position, i)
+    cat("I found banana at position", position)
+  }
+}
+```
+
+### Alternative approach 1
+```{r}
+position <- c(1: length(x)) [x == "pineapple"]
+
+cat("This time I find pineapple at position", position)
+```
+
+Here we use a logical indexing, which returns the vector elements with position corresponding to TRUE values.
+
+### Alternative approach 2
+```{r}
+position <- which(x == "mango")
+cat("This time I found mango at position", position)
+```
+As you can see which() is an inbuilt function that gives TRUE indices of a logical object.
+
+# Functions
+There are many inbuilt functions including the functions that are provided by external packages. But we can also define our own functions to perform certain operations on objects.
+```{r}
+compairingFunction <- function(arg1, arg2){
+  if (arg1 > arg2){
+    cat (arg1, "is greater than", arg2)
+    out <- arg1
+  }  else if (arg1 < arg2){
+    cat (arg2,"is greater than", arg1)
+    out <- arg2
+  } else {
+    cat ("Both", arg1, "and", arg2, "are same")
+    out <- c()
+  }
+  cat("\nLarger ~>", out)
+}
+
+compairingFunction(3, 8)
+```
+
+# Family of 'apply'
+In R there is a family of functions like apply, sapply, lapply and mapply, which can be used to apply any other function (where appropriate) simultaneously to a large number of different inputs.
+
+## apply
+As an input argument it takes a numeric array or matrix and a 'margin' indicator.
+```{r paged.print=TRUE}
+arr <- array(1:20, dim = c(4, 5))
+
+arr
+
+mat <- matrix(1:20, nrow = 4, ncol = 5)
+
+mat
+```
+
+In matrix() function we have to specify the dimensions as separate arguments 'nrow' (number of rows) and 'ncol' (number of columns).
+```{r paged.print=TRUE}
+apply(arr, MARGIN = 1, sum) # Row-wise
+
+apply(mat, MARGIN = 2, sum) # Column-wise
+```
+
+> Note that, the table's values are filled in column-by-column.
+
+    1. MARGIN = 1 ~> Row-wise operation
+    2. MARGIN = 2 ~> Column-wise operation
+
+We use the inbuilt function sum and apply across row and column.
+
+### Custom function for apply
+There are many useful inbuilt functions (like mean, median, sum, product, sd,...) but here we are going to make a custom function.
+```{r}
+newFunction <- function(arg1){
+  max(arg1[1:3]) + min(arg1[4:5]) 
+}
+```
+
+Lets use this function to our matrix using apply.
+```{r}
+apply(mat, MARGIN = 1, newFunction)
+```
+
+### Cautionary note
+Here we don't specify the data types of the arguments and no length checking of the input as its only a local function. But always remember to construct a test scenario for your script.
+
+## sapply
+Where 'apply' evaluates a function using each row or column of a matrix as its input, 'sapply' evaluates a function using each individual element of a vector or a list.
+```{r}
+x <- c("apple", "banana", "pineapple", "mango")
+
+x
+```
+
+### Paste
+Let's append a set of characters to these, lets say "-juice".
+```{r}
+y <- paste(x, "juice", sep = "-")
+
+y
+```
+We use a inbuilt function called "paste()", that takes a number of character (vector) arguments and appends them together with a separator specified by 'sep'.
+
+### Split
+Lets say, we want to split the string that are stored in object y. To do that we are going to use 'strsplit()' function, that splits up a string based on a specified delimiter.
+```{r paged.print=TRUE}
+z <- strsplit(y[3], split = "-")
+
+z
+
+class(z)
+```
+As you can see, our result returned a list with one element that is a vector containing two strings. 
+
+> What we will do to get only the "pineapple" string from the above result?
+
+```{r}
+z[[1]][1]
+```
+Now we came to the point to see the application of 'sapply'.
+
+### Custom function for sapply
+```{r}
+fruitCollection <- function(arg1){
+  strsplit(arg1, split = "-")[[1]][1]
+}
+```
+Now lets use 'sapply'.
+```{r}
+sapply(y, fruitCollection)
+```
+
+## lapply
+lapply is very similar to sapply, but the output is a list. To see it's use let make a list.
+```{r}
+x <- list(1, c(1, 3, 5, 7), c(2, 4, 6))
+
+x
+```
+
+### Custom function for lapply
+```{r}
+diffFunction <- function(arg1){
+  setdiff(arg1, 2) # Difference is 2
+}
+```
+
+Here we use a set difference operator, which will return the first argument but having removed all elements that match any elements of the second argument.
+```{r paged.print=TRUE}
+lapply(x, diffFunction)
+
+sapply(x, diffFunction)
+```
+From the above comparison it is clear that both 'sapply()' and 'lapply()' perform the same operation on vector, matrix, list or data frame. But the only difference is the class of the object that is returned. As 'lapply()' always returns a list but 'sapply()' don't.
+
+## mapply
+Lastly, mapply() function takes multiple input arguments and applies the function using the first element of each argument, then the second and so on.
+```{r paged.print=TRUE}
+x <- c(1:6)
+
+x
+
+y <- c(2:7)
+
+y
+```
+
+### Custom function for mapply
+```{r}
+addFunction <- function(arg1, arg2){
+  arg1 + arg2
+}
+```
+Now lets use 'mapply' as there are multiple arguments of our function.
+```{r}
+mapply(x, y, FUN = addFunction)
+```

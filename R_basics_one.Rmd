@@ -1,0 +1,232 @@
+---
+title: "R Basics One"
+author: "Neko_Chan666"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    theme: journal
+    df_print: paged
+    css: style.css
+---
+
+# R workspace
+As you know R is a statistical programming environment that can store objects in it's workspace. If we create any object in current workspace, then it can be viewed by
+```{r}
+ls()
+```
+As you can see there are no objects at first.
+So lets create an object.
+
+## Creating object
+```{r}
+x <- 1
+
+ls()
+```
+Now there is an object called 'x' with a value 1. Lets try to remove it.
+
+## Removing object
+```{r}
+rm(x)
+
+ls()
+```
+After using rm(<obj_name>) function, there is no object.
+
+## Saving workspace
+To save your workspace into a file use
+```{r}
+save.image("workspace.Rdata")
+```
+This will save our current workspace ^_^
+
+# Data handling
+The objects that can be manipulated in a wide variety of ways in R. So lets start @_#
+
+## Basic data types
+    1. Character ~> These are the combination of alpha-numeric character that are quoted by "".
+    2. Numeric ~> A number value.
+    3. Logical ~> TRUE or FALSE
+
+## Data structures
+
+### Vectors
+In the context of R, a vector is a simple one-dimensional list of objects which are all of the same basic type.
+Now to create a vector we have to use 'concatenate' function c().
+```{r}
+vec1 <- c(1, 2, 3) # All integer
+
+vec1
+
+vec2 <- c(1, 3, 4, 5.4) # If vector contains a float
+
+vec2
+
+vec3 <- c(2:10) # Vector of sequential integers
+
+vec3
+```
+
+it's a bit confusing but the indexing of vectors starts with 1. So to retrieve an object from the vector we will use the indexing.
+```{r paged.print=TRUE}
+vec1[1]
+
+vec2[vec1]
+```
+
+The second retrieval can be a little confusing so let me tell. 'vec1' contains 3 objects (1, 2, 3) so when we put 'vec1' inside 'vec2' then (1, 2, 3) become indexes of (1, 3, 4, 5.4). After running 'vec2[vec1]' we get (1, 3, 4) as outputs.
+
+> What if you use negative indexing?
+
+> Well that's a valid question. Negative indices don't return the indexed element(s).
+
+```{r paged.print=TRUE}
+vec2[-1] # index 1 ~> 1; there is no 1
+
+vec2[-3] # index 3 ~> 4; and there is no 4
+```
+
+### Arrays
+Arrays are multi-dimensional vectors, meaning it's like a table of objects of same basic data type.
+Arrays can be create in R using the function array() that is filled with values in order of the dimensions (like row first, column second...)
+```{r}
+arr <- array(c(3:17), dim = c(3, 5))
+
+arr
+```
+
+Remember, if the number of elements exceed the dimension then after filling the dimension elements will be lost o_O
+Just like vectors, arrays are also indexed with square brackets with row first and column second.
+```{r paged.print=TRUE}
+arr[1, 3] # first row and third column
+
+arr[2,] # second row
+
+arr[, 5] # fifth column
+
+arr[,c(1,3)] # first and third column
+```
+
+### Lists
+List and vector both data structures can store elements but in a vector all basic data types should have to be same whereas in a list there can exist different data types. Lets use it e_e
+```{r}
+myList <- list(1, 2, 3)
+
+myList
+```
+
+Now to index one of the elements from within a list, we have to [[index]].
+```{r}
+myList[[1]]
+```
+
+Lets change the index [[1]] with a collection.
+```{r}
+myList[[1]] <- c(32, 43, 9)
+
+myList
+```
+
+> As you can see, an individual element of a list in R may be a list itself. !_!
+
+For this property, list is also known as a 'recursive' data structure.
+```{r}
+myList[[2]] <- list("gene A", "gene B", "gene C")
+
+myList
+```
+
+We can also retrieve an element by names.
+Lets say we name an element 'neko'.
+```{r paged.print=TRUE}
+myList[[3]] <- list(21, 33, neko = 6)
+
+myList
+
+myList$neko # Remember, we put the list into the index [[3]] not overwrite the whole list
+
+myList[[3]]$neko
+```
+
+### Data frames
+Yes you guessed right!!!
+Data frames also belong to data structures.
+A data frame is a bit of a cross between an array and a list.
+
+> Data frame is essentially a list in which the elements must all be the vector of the same length, although they can be of different basic data types.
+
+Basically it's a table of different data types that may be considered related. 
+Lets create a data frame with 2 columns, one of which represents the numbers from 1 to 9 and other in their textual form.
+```{r}
+myFrame <- data.frame(no. = c(1:9), names = c("one", "two", "three", "four", "five", "six", "seven", "eight", "nine"))
+
+myFrame
+```
+
+This is the standard format in R for tables of data, as it can represent multiple attributes of a set of things.
+
+## Data input/output
+Now after making a data frame 'myFrame', lets save the object from the workspace to a file (lets say, "myFrame.txt").
+
+OOh... before that, lets create a directory first @_@!
+
+### Directory creation
+```{r}
+directory <- "./R_basic_one"
+
+if (dir.exists(directory)){
+  cat("The directory already exists...")
+} else {
+  dir.create(directory, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+  cat("Created !!!")
+}
+```
+As you can see, here we use two functions "dir.create" and "dir.exists". The function dir.create() function creates a new directory with a specified path whereas dir.exists() function checks whether the directory exists or not.
+
+> dir.create(path, showWarnings = TRUE, recursive = FALSE, mode = "0777")
+
+#### Parameters
+    1. path ~> Relative or absolute path of the directory, the directory we want to create.
+    2. showWarnings ~> It is a logical argument means if there is a failure then it will print FALSE.
+    3. recursive ~> It is a logical argument that is very similar to "mkdir -p". It means that "mkdir" can only create a folder in the current working directory but if we want to create a directory in another location then the we have to use "mkdir -p".
+    4. mode ~> Giving full permission of 'rwx' for 'user, group and others'. Means giving full permission.
+    
+#### Return Value
+The dir.create() function returns an invisibly logical vector indicating if the operation succeeded for each of the files attempted.
+
+### Storing as a file
+Now lets write a file named "myFrame.txt" containing our data frame.
+
+```{r}
+myFile <- "./R_basic_one/myFrame.txt"
+
+write.table(myFrame, file = myFile, sep = "\t", quote = FALSE, row.names = FALSE)
+```
+
+> write.table(dataframe, file = "file_name.txt", sep = "\t", quote = FALSE, row.name = FALSE)
+
+Here we replace "./R_basic_one/myFrame.txt" with "file_name.txt" ?_?
+
+#### Parameters
+    1. sep ~> This will separate our table with some input string. Like here we use "\t", it means a tab, which is useful for Excel.
+    2. quote ~> By default R places double quotes " around all characters in the table. So we mark quote as FALSE. It's a good practice to remove these.
+    3. row.names / col.names ~> By default write.table() funtion writes an additional row and column names in the file. So to get rid of these, we specify row.names = FALSE.
+    
+### Reading a file
+```{r}
+newFrame <- read.table(file = myFile, sep = "\t", header = TRUE)
+
+newFrame
+```
+
+#### Parameters
+    1. file ~> This indicates the date frame we store in our secondary memory.
+    2. sep ~> Stands for separator.
+    3. header ~> It says that the first row of the file should be used as the column headers.
+  
+```{r}
+newFrame$names
+```
