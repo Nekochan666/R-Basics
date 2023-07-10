@@ -1,0 +1,180 @@
+---
+title: "Statistical Methods"
+author: "Neko_Chan666"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    theme: journal
+    df_print: paged
+    css: style.css
+---
+
+# Sampling
+Let's try sampling two sets of three measurements from the same normally-distributed population and their means. For this we will use the 'rnorm' function which draws random numbers from a specified normal distribution.
+
+## Same populations
+
+```{r paged.print=TRUE}
+set.seed(10)
+
+sample1 <- rnorm(3, mean = 1, sd = 1)
+
+sample1
+
+sample2 <- rnorm(3, mean = 1, sd = 1)
+
+sample2
+```
+
+Here we made two vector objects of three numbers.
+Now let's look at the means of each set of three numbers.
+```{r paged.print=TRUE}
+mean(sample1)
+
+mean(sample2)
+```
+
+We already know that the population from which each sample was drawn is the same, so if the means of the samples are estimates of the means of the populations they were drawn from, they should be the same. But they won't be exactly the same, as we have randomly drawn only three numbers from the distributions.
+
+## Different populations
+Let's draw samples of three numbers from two different populations to compair.
+```{r paged.print=TRUE}
+sample3 <- rnorm(3, mean = 1, sd = 1)
+
+sample3
+
+sample4 <- rnorm(3, mean = 2, sd = 1)
+
+sample4
+```
+
+Let's look at the means of each set of three numbers.
+```{r paged.print=TRUE}
+mean(sample3)
+
+mean(sample4)
+
+mean(sample3) - mean(sample4)
+```
+
+Did you see the difference?
+
+## Repeated comparisons
+
+Let's repeat our comparison of three numbers drawn from the same normally distributed population, say, 150 times.
+```{r}
+meanDifference <- c() # Empty vector
+
+for (i in 1:150){
+  x <- rnorm(3, mean = 1, sd = 1)
+  y <- rnorm(3, mean = 1, sd = 1)
+  meanDifference <- c(meanDifference, abs(mean(x) - mean(y)))
+}
+
+head(meanDifference)
+```
+
+We create two vectors x and y that are drawn randomly from a normal distribution with mean = 1 and standard distribution = 1.
+```{r}
+sum(meanDifference)
+
+sum(meanDifference >= 2.599836)
+```
+
+We use the 'sum()' function because the greater-equal operator will return a vector of TRUE / FALSE values, one of each element of 'meanDifference' and sum of TRUE / FALSE values gives the number of TRUE values.
+
+# Probability
+
+## Random variables
+Randomness in data analysis is the way to account for uncontrolled sources of variation affecting the observations.
+A random variable refers to some quantity that can take certain values and individual observations of its values can be made.
+
+> Random variable is a mathematical function that produces measurable outputs (these will be our sample) from the set of all possible values.
+
+If I asked you guys a question?
+~> The answer will be 'yes' or 'no'.
+
+Here we can consider the responses to a random variable (X), taking values 'yes' or 'no'. Let's define our random variable with mathematical notation:
+
+$$ X \in \{yes, no\}$$
+
+The variable can be represented in R as an object of the 'logical' data type.
+To describe a specific sample (let's say t) from the random variable X, we may define the set of observed values.
+
+$$ X = \{x_{1}, x_{2}, ..., x_{n}\}.\forall i \in \{1, 2, ..., n\}, x_{i} \in \{yes, no\}$$
+
+Now this sample x could be represented in the R environment by a vector.
+```{r}
+set.seed(10)
+```
+
+Rather than using 'rnorm' function, we can also use 'runif' function that draws random number from a uniform distribution, means any value within the specified range (from 0 to 1) is as likely as each other.
+```{r}
+x <- runif(10)>0.5
+
+x
+```
+
+The above function will return logical value with equal chance of being less than or greater than 0.5.
+
+## Probability distributions
+For random variable X,
+$$Pr(X = yes) = 0.5$$
+$$Pr(X = no) = 0.5$$
+
+Here, Pr(...) denotes the probability of some condition being met.
+The distribution of any random variable is defined through a function, known as 'probability distribution function'.
+
+## Bernoulli distribution
+A well-known and well-defined probability distribution with two possible values.
+So, the random variable X follows a Bernoulli distribution, which we could define using the porbability of a 'yes' (let's say p).
+
+$$ X \sim Bernoulli(p)$$
+The notation ~ denotes that a random variable follows some given distribution.
+We already get a random collection of TRUE and FALSE in the object x.
+```{r}
+as.numeric(x)
+```
+
+Here we convert our logical values into numbers (say, 0 and 1). Let's define a new random variable Y as the sum of the numerical values (0 or 1) represented by a sample from the random variable X.
+
+$$Y = \sum_{i = 1}^{n} X_i . \forall i \in \{1, 2, ..., n\}, X_i \sim Bernoulli(p = 0.5)$$
+The above Bernoulli distribution don't show the number of people who are answering the question.
+So we modify the above equation like this
+$$Y \sim B(n, p = 0.5)$$
+
+For Binomially-distributed random variable X,
+$$Pr(X = k) = \binom{n}{k}.p^k . (1 - P)^{n-k}$$
+
+Here, Pr.(X = k) represents the probability of the random variable X taking the value k.
+
+## Hypothesis testing
+We can use the probability distribution function for Y to quantify the 'uncertainty' in this assertion, given the data. We do this by constructing a "null hypothesis" that the probability of any one person answering 'yes' was 50% (that is X ~ Bernoulli(p)) and therefore Y ~ B(n, p = 0.5).
+If an individual's answer is equally likely to be 'yes' or 'no, model X as random variable
+$$X \sim Barnoulli(p = 0.5)$$
+models total number of 'yes' responses across a sample as Y
+$$Pr(Y<=3\ OR\ Y>=7) = \sum_{i \in \{0,1,2,3,7,8,9,10\}}^{Y \sim B(n, p = 0.5)} Pr(Y = i) = 0.344$$
+Here let's say we have 10 observers and our sample value was Y = 7, meaning that to be at least that different to a 50/50 split, we would need, $$Y \in \{0,1,2,3,7,8,9,10\}$$
+
+Let's see how we can calculate this using R. We will use the 'dbinom' function, which computes the probability distribution function for a binomially-distributed random variable. To calculate the probability of observing exactly 7 'yes' responses to 10 yes/no questions, for which each question has equal probability of yes/no (p = 0.5).
+```{r}
+dbinom(7, prob = 0.5, size = 10)
+```
+
+> dbinom(TRUE results, prob = Chance of saying yes/no, size = Total number of observers)
+
+Now, if the probability of a yes or no response is equal (both 0.5), then the presumably the probability of 7 no responses would be the same as the probability of 7 yes responses? (7 no response = 3 yes response)
+Let's check this ^_^
+```{r}
+dbinom(3, prob = 0.5, size = 10)
+```
+
+Let's sum up the possibilities for each possible value we are interested in
+```{r}
+sum(dbinom(c(0, 1, 2, 3, 7, 8, 9, 10), prob = 0.5, size = 10))
+```
+
+In a statistical hypothesis test, this probability of the null hypothesis is often referred to as the 'p-value'.
