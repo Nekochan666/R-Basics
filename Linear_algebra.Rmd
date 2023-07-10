@@ -1,0 +1,64 @@
+---
+title: "Linear algebra"
+author: "Neko_Chan666"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    theme: journal
+    df_print: paged
+    css: style.css
+---
+
+# Linear algebra
+It is often convenient to think biological datasets as 'matrices', as values are of same set of variables (e.g., levels of expression of different genes) in a set of biological samples (e.g., cell lines with different treatment protocols). So performing mathematical operations on matrices (termed as 'linear algebra') is worth learning.
+A matrix is a grid of numbers, each of which can be referred to by row and column indices.
+Let's define a matrix A of dimension 3x2. (it has 3 rows and 2 columns)
+
+$$\begin{bmatrix}
+A_{11}&A_{12} \\
+A_{21}&A_{22} \\
+\end{bmatrix}$$
+
+## Matrix multiplication
+If we multiply two matrices, then a new matrix with the number of row of the first matrix and the number of column of the second matrix will be formed.
+
+$$ If\ AB = C,\ C_{ij} = \sum_{k = 1}^{p} A_{ik}\ *\ B_{kj}$$
+
+If A is an (n x p) matrix and B is a (p x m) matrix, then AB will be an (n x m) matrix.
+
+Let's make a matrix in R.
+
+## Matrix in R
+Matrix A with dimensions (3 x 2).
+```{r}
+A <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 3, ncol = 2)
+
+A
+```
+
+Let's make another matrix B with dimensions (2 x 3).
+```{r}
+B <- matrix(c(1, 2, 3, 4, 5, 6), nrow = 2, ncol = 3)
+
+B
+```
+
+## Matrix multiplication in R
+To multiply these two matrices we need an operator "%*%".
+```{r}
+C <- A%*%B
+
+C
+```
+
+As you can see the resultant matrix C is a (3 x 3) matrix.
+
+# Why?
+As we already know, a set of values sampled from a population of values modeled as a 'random variable'. And if multiple measurements are obtained from the same objects, the set of vectors representing each measurement's values can be treated as a matrix.
+
+> A matrix with just one row or one column is usually referred to as a vector.
+
+This is usually the case for the datasets we will be working with ^_^
