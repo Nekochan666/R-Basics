@@ -1,0 +1,205 @@
+---
+title: "R Basics Three"
+author: "Neko_Chan666"
+date: "`r Sys.Date()`"
+output:
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    theme: journal
+    df_print: paged
+    css: style.css
+---
+
+# Plots
+As we are analyzing data, so it's really helpful to visually represent the data to support our theoretical arguments. And R has some really helpful functions for us. Lets see those plots.
+
+## Simple scatterplot
+If we simply use the command plot() then R will plot the values of an input vector in sequence, automatically scaling the axes.
+```{r}
+x <- c(1, 3, 2)
+
+plot(x)
+```
+
+> plot(type = "p", col = "red", xlim = c(0, 10), ylim = c(0, 10), lwd = 6, main = "Graph name", xlab = "X-axis", ylab = "Y-axis")
+
+### Arguments of plot()
+1. type ~> What type of plot should be drawn.
+     - "p" -> points
+     - "l" -> lines
+     - "b" -> both points with lines
+     - "c" -> lines part along the "b"
+     - "s" -> stair steps
+     - "n" -> no plotting
+2. col ~> Stands for colors
+3. xlim ~> Limits for x axis
+4. ylim ~> Limits for y axis
+5. lwd ~> Line width
+6. main ~> Graph name
+7. xlab ~> Name of your x-axis
+8. ylab ~> Name of your y-axis
+```{r paged.print=TRUE}
+x <- c(1, 3, 4)
+
+plot(x, type = "p", col="red", xlim = c(0, 4), ylim = c(0, 4), lwd = 4)
+
+plot(x, type = "b", col="green", xlim = c(0, 4), ylim = c(0, 4), lwd = 4)
+
+plot(x, type = "o", col="blue", xlim = c(0, 4), ylim = c(0, 4), lwd = 4)
+
+plot(x, type = "s", col = "red", xlim = c(0, 4), ylim = c(0, 4), lwd = 4)
+
+plot(x, type = "h", col = "green", xlim = c(0, 4), ylim = c(0, 4), lwd = 4)
+```
+
+### Multiple plotting
+If there is a plot that already exists then to draw another subsequent plot on the graph we will use 'points()' function.
+```{r paged.print=TRUE}
+x <- c(1:7)
+y <- c(3, 4, 1, 5, 2, 7, 6)
+
+plot(x, y, type = "l", col = "gray45",
+    lwd = 3,
+    main = "It's a straight line ~_~",
+    xlab = "X-Values",
+    ylab = "Y-Values")
+
+z1 <- c(1:5)
+
+z2 <- c(2.3, 1.5, 5, 3.4, 2)
+
+points(z1, z2, type = "l", col = "red4", lwd = 3)
+```
+
+### Multiple variable plotting
+We can use the same plot() function to plot two vectors against each other.
+```{r}
+vec <- c(1:23)
+
+plot(x = vec, y = vec^2, col = "green4", lwd = 4)
+```
+
+Here we can see the propagation of the equation,
+$$y = x^2$$
+
+## Box plots
+Box plots are based around the list data structure. By using lists, each elements of the list can be represented by its own box and thus doesn't need to be the same length.
+```{r}
+myList <- list(c(5:10), 3.2, c(1:13))
+
+boxplot(myList)
+```
+
+### Saving boxplot
+There is a set of functions in R that can create a file in which to draw graphical outputs: png(), jpeg(), bitmap().
+```{r results=FALSE}
+png(file = "R_basics_three_boxplot.png")
+
+boxplot(myList)
+
+dev.off()
+```
+
+Remember to close the opened file using "dev.off()" otherwise next we you want to save a file in your secondary storage devices it will not store the file, throwing an error saying the file is still open.
+
+# ggplot2
+We have already see a function with cute graphical capabilities but R has developed a more cuter graphical tool called 'ggplot2'.
+
+> ggplot stands for 'grammar of graphics plot'.
+
+If you don't have 'ggplot2' in your environment then install it by the following manner.
+
+## Installing ggplot2
+
+```{r eval=FALSE, include=FALSE, results=FALSE}
+install.packages('ggplot2')
+```
+
+Now remember that ggplot2 takes data frames as input.
+Let's say this is the viability of a cell line, treated with a drug in two different cell culture conditions. Because we will draw the viability values randomly, we are setting the seed of the random number generator to a specific value.
+
+## Generating random points
+
+```{r}
+set.seed(10)
+```
+Here we use set.seed() function that doesn't create an output directly. Instead it alters the internal state of the R workspace. This function ensures that we will get the same results for randomization. Now we can generate some (pseudo-)random numbers to draw.
+```{r}
+viability <- rnorm(40)
+
+viability
+```
+
+We use 'rnorm()' function to create an object with 40 random values drawn from a standard normal distribution.
+```{r}
+treatment <- rep(c("control", "treated"), 20)
+```
+
+The function 'rep()' stands for repeat, it will repeat the two strings 20 times.
+```{r}
+culture <- rep(c("Media1", "Media2"), 20)
+```
+
+Now we will combine these three objects together into a data frame.
+```{r}
+plotDF <- data.frame(viability = viability, treatment = treatment, culture = culture)
+
+head(plotDF)
+```
+
+We have a data frame with three named columns.
+We already installed the 'ggplot2' package. Let's load the library into our workspace.
+
+## Loading library
+
+```{r}
+library("ggplot2")
+```
+
+```{r}
+ggplot(plotDF, aes(x = culture, 
+                   y = viability,
+                   fill = treatment)) +
+
+geom_boxplot() +
+
+geom_point(position = position_jitterdodge())
+```
+
+## Arguments of ggplot
+
+> The ggplot2 is made of three basic elements: Plot = Data + Aesthetics + Geometry
+
+1. Data ~> 
+    - The data frame that we created "plotDF".
+    - aes ~> This function maps columns of the input data frame to characteristics of the plot.
+        - x ~> x-axis: culture
+        - y ~> y-axis: viability
+        - fill ~> Fill the boxplot with treatment column
+    
+2. Aesthetics ~> It is used to represent x and y in a graph. It can alter the color, size, dots, the height of the bars etc.
+
+3. Geometry ~> It defines the graphics type, i.e., scatter plot, bar plot, jitter plot etc.
+
+> It's important to note that you have to use the addition (+) operator to add the geom layer.
+
+## Alternative
+
+```{r}
+ggplot(plotDF, aes(x = culture,
+                   y = viability,
+                   col = treatment)) +
+
+geom_point()  
+```
+
+```{r}
+ggplot(plotDF, aes(x = culture,
+                   y = viability,
+                   col = treatment,
+                   shape = treatment)) +
+
+geom_point()  
+```
