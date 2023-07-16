@@ -1,0 +1,126 @@
+---
+title: "Normalization"
+author: "Neko_Chan666"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    theme: journal
+    df_print: paged
+    css: style.css
+---
+# Normalization
+Let's say we are using qRT-PCR to quantify the expression of a gene in two cell lines. Technical variation could arise from difference in the amounts of starting material, from differences in amplification efficiency. Repeated measurements are used to be able to obtain representative values, which can be considered as sampling from a population of all possible values of taking the same measurements from the same cells. Control measurements are taken from each sample to adjust for some technical bias (lets say differences in reagent volumes or efficiency).
+The process of normalization refers to attempts to remove systematic biases that otherwise confound comparisons between different measured entities.
+
+> Normalization means removing technical variations
+
+## Centering
+If normalization is the removal of systematic bias across sets of measurements to facilitate comparison, the simplest approach to this is to make sure the values you are trying to compare occupy the same range.
+
+'Centering' is the process of making a distribution centered on (i.e., the average value) zero. It will not change the spread of the values, which may well be skewed in favour of one side of the average.
+Subtracting the mean of the distribution from all values will center a distribution on zero, although the median tends to be a more robust estimator of population mean from a small sample size and ensure an equal number of points either side of zero after centering.
+
+## Scaling
+Scaling is the process of standardizing the spread of values from a distribution, so that the differences representing a similar proportion of a distribution's range result in a difference with a similar magnitude. 
+The simplest way to scale different distributions is to divide all the values by the 'standard deviation' (sd). 
+
+Like centering, scaling a distribution in this way won't affect the pattern of the spread of values, so will preserve any skew or multi-modality (multiple distinct peaks).
+
+## Standardization
+When we are dealing with normal distributions, the process of centering and scaling is referred to as 'standardization', as it will result in a standard normal distribution (with mean = 0  and standard deviation = 1).
+
+# Normalization in R
+To make sure the results are reproducible, even though we're using random numbers, we will use 'set.seed' function.
+```{r}
+set.seed(10) # Seed for 10 values
+
+x <- rnorm(10, mean = 1, sd = 2)
+
+x
+
+y <- rnorm(10, mean = 2, sd = 1)
+
+y
+```
+
+So, we can say that the values of y tends to be higher than the values of x, but the x values have a larger spread.
+
+## Boxplot
+```{r}
+boxplot(list(x = x, y = y))
+```
+
+Remember that boxplot function will draw a separate box for each element of the list supplied as the argument to the function.
+In this case, we created a list of two objects and plot in box shaped.
+Now let's center the vectors x and y by subtracting the median.
+
+### Centering the boxplot
+
+```{r}
+xc <- x-median(x)
+
+yc <- y-median(y)
+
+boxplot(list(x = xc, y = yc))
+```
+
+We have created a new object xc, which contains the difference between each values of x and the median of x. With the similar approach we have created yc.
+As we can see the two distributions are now both centered on zero.
+
+### Scaling the boxplot
+
+As for scaling, this will be similar to centering, but instead of subtracting the median we divide by the standard deviation.
+```{r}
+xs <- x/sd(x)
+
+ys <- y/sd(y)
+
+boxplot(list(x = xs, y = ys))
+```
+
+### Standardizing the boxplot
+
+Finally, we can apply both centering and scaling, which will standardize the distributions so that they both have the same mean and standard deviation. Standardized values are sometimes referred to as "z-scores".
+```{r}
+xz <- (x-median(x))/sd(x)
+
+yz <- (y-median(y))/sd(y)
+
+boxplot(list(x = xz, y = yz))
+```
+
+### Standardization with mean values
+
+```{r}
+xz <- (x-mean(x))/sd(x)
+
+yz <- (y-mean(y))/sd(y)
+
+boxplot(list(x = xz, y = yz))
+```
+
+# Tracing the random numbers
+
+```{r}
+set.seed(30)
+# Taking mean and standard deviation
+Mean <- 0
+SD <- 2
+# Making a normal distribution
+x <- seq(-5, 5, length = 1000)
+y <- dnorm(x, Mean, SD)
+plot(x, y, type = 'l', lwd = 2, col = "gray60") 
+abline(v = Mean) # Mean line
+# Taking random numbers of the distribution
+z <- rnorm(30, Mean, SD)
+z1 <- dnorm(z, Mean, SD)
+points(z, z1, col = 'red3')
+```
+
+# Quantile normalization
+
+Centering and scaling can be useful tools for normalization, but they will not alter the shape of a distribution, just the range across which its values lie.
+Let's say, we have thousands of measurements of gene expression levels obtained for a number of samples that each had the same total amount of mRNA. Here we need to equalize the shape of the samples. We can use quantile normalization to make the distributions the same shape.
