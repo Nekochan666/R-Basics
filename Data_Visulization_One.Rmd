@@ -1,0 +1,381 @@
+---
+title: "Data Visualization with ggplot2 One"
+author: "Neko_Chan666"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    number_sections: TRUE
+    theme: journal
+    df_print: paged
+    css: style.css
+---
+
+# Loading
+```{r}
+library("ggplot2")
+library("patchwork")
+```
+
+ggplot2 has a pre-built dataset called 'mpg', so we are going to use it.
+```{r}
+head(mpg) # Fuel economy data
+```
+
+## Components
+Every ggplot2 plot contains 3 key components ~>
+
+1. data ~> Data frame (input)
+2. aesthetic mappings ~> A set of mappings between variables in the data and visual properties
+3. geom function ~> At least one layer which describes how to render each observation.
+
+```{r}
+ggplot(mpg, aes(x = displ, y = hwy)) + 
+  geom_point()
+```
+
+So we had a scatter plot with ~> 
+    
+    data ~> mpg
+    Aesthetic mapping ~> Engine size (displ) is mapped to x position and fuel economy (hwy) is mapped to y position.
+    Layer ~> points.
+    
+## Exploration
+
+1. Relationship between cty and hwy ~>
+
+```{r}
+ggplot(mpg, aes(cty, hwy)) + geom_point()
+```
+
+A relationship can be observed but not very definitive. Later we can see it more clearly.
+
+2. Relationship between model and manufacturer ~> 
+
+```{r}
+ggplot(mpg, aes(model, manufacturer)) + geom_point()
+```
+
+I can't find any relationship, Can you?
+
+# Other aesthetic attributes
+
+To add additional variables to a plot, we can use other aesthetics like: color, shape, size.
+
+## Based on color
+
+```{r}
+ggplot(mpg, aes(displ, cty, color = class)) +
+  geom_point()
+```
+
+## Based on shape
+
+```{r}
+ggplot(mpg, aes(displ, cty, shape = drv)) +
+  geom_point()
+```
+
+## Based on size
+
+```{r}
+ggplot(mpg, aes(displ, hwy, size = cty)) +
+  geom_point()
+```
+
+# Comparison
+
+Let's compare two following plots
+```{r paged.print=TRUE}
+p1 <- ggplot(mpg, aes(displ, hwy)) + geom_point(aes(color = "blue"))
+
+p2 <- ggplot(mpg, aes(displ, hwy)) + geom_point(color = "blue")
+
+p1 + p2
+```
+
+In the first plot, the value 'blue' is scaled to a pinkish color, and a legend is added. But in the second plot, the points are given the R color blue.
+
+# Facetting
+
+Another technique for displaying additional categorical variables on a plot is facetting. Here we will split the data into subsets and display the same graph for each subset.
+```{r}
+ggplot(mpg, aes(displ, hwy)) + geom_point() + facet_wrap(~class)
+```
+
+Here we break the graph based on class that is a discrete variable. But what will happen if we wrap a graph based on continuous variable (like hwy)?
+
+```{r}
+ggplot(mpg, aes(displ, cyl)) + geom_point() + facet_wrap(~hwy)
+```
+
+Let's compare it with more of a discrete variable like cyl.
+```{r}
+ggplot(mpg, aes(displ, hwy)) + geom_point() + facet_wrap(~cyl)
+```
+
+So it can be observed that if the variable is a discrete type then sub-setting will be less compared to a continuous variable.
+
+# Plot geoms
+As we already know that geom function add a layer which describes how to render each observation. There are many commonly used plot types.
+
+1. geom_smooth() fits a smoother to the data and displays the smooth and its standard error.
+2. geom_boxplot() produces a box-and-whisker plot to summarize the distribution of a set of points.
+3. geom_histogram() and geom_freqpoly() show the distribution of continuous variables.
+4. geom_bar() shows the distribution of categorical variables.
+5. geom_path() and geom_line() draw lines between the data points. A line plot is constrained to produce lines that travel from left to right, while paths can go in any direction. Lines are typically used to explore how things change over time.
+
+## Smoothing a plot
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() + 
+  geom_smooth()
+```
+
+If you want to turn off the standard error showing part (the grayish point-wise confidence intervals) then let's do that.
+```{r}
+ggplot(mpg, aes(displ, hwy)) +
+  geom_point() + 
+  geom_smooth(se = FALSE)
+```
+
+If you plot the above ggplots with smoothing, then geom_smooth will through an message about "loess". So let's talk about that.
+
+Generally, geom_smooth takes an argument that is called 'method'. Method allows us to choose which type of model we want to use to fit the smooth curve.
+
+### Methods
+
+1. method = "loess" ~> Represents wiggliness of the line. The wiggliness of the line is controlled by the span parameter, which ranges from 0 (extreme wiggly) to 1 (not so wiggly).
+
+```{r}
+plot1 <- ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() +
+  geom_smooth(method = "loess", span = 0.2)
+
+plot2 <- ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() +
+  geom_smooth(method = "loess", span = 1)
+
+plot1 + plot2
+```
+
+The message doesn't shouting about "What method you are using?", but there is another message that is popping up about formula.
+
+2. method = "gam" ~> It's a generalized additive model provided by the 'mgcv' package. So let's load it first.
+```{r message=FALSE, warning=FALSE}
+library("mgcv")
+```
+
+Now we can use formula like 'formula = y ~ s(x)' or 'y ~ s(x, bs = 'cs') (for larger data means more than 1000 points).
+
+```{r}
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() +
+  geom_smooth(method = "gam", formula = y ~ s(x))
+```
+
+3. model = "lm" ~> It's a linear model, giving the line of best fit.
+```{r}
+ggplot(mpg, aes(displ, hwy)) + 
+  geom_point() +
+  geom_smooth(method = "lm")
+```
+
+## Boxplot and jittered points
+When a set of data includes a categorical variable and one or more continuous variables. Let's see how the values of the continuous variables vary with the levels of the categorical variable.
+```{r}
+ggplot(mpg, aes(drv, hwy)) + geom_point()
+```
+
+As we can see there is a lot of over plotting, means many points are plotted in the same location and it's difficult to see the distribution. Let's see some useful techniques that help to avoid this problem.
+
+1. Jittering ~> geom_jitter() ~> Adds a little random noise to the data which can help avoid over plotting.
+```{r}
+ggplot(mpg, aes(drv, hwy)) + geom_jitter()
+```
+
+2. Boxplots, geom_boxplot() ~> Summarize the shape of the distribution with a handful of summary statistics.
+```{r}
+ggplot(mpg, aes(drv, hwy)) + geom_boxplot()
+```
+
+3. Violin, geom_violin() ~> Show a compact representation of the "density" of the distribution, highlighting the areas where more points are found.
+```{r}
+ggplot(mpg, aes(drv, hwy)) + geom_violin()
+```
+
+## Histogram and frequency polygons
+Histogram and frequency polygons show the distribution of a single numeric variable. 
+```{r}
+ggplot(mpg, aes(hwy)) + geom_histogram()
+```
+
+```{r}
+ggplot(mpg, aes(hwy)) + geom_freqpoly()
+```
+
+Both histograms and frequency polygons work in the same way ~>
+
+1. Bin the data
+2. Then count the number of observations in each bin.
+
+If we want to adjust the width of the bin then we will use the 'binwidth' argument.
+```{r}
+plot1 <- ggplot(mpg, aes(hwy)) + geom_freqpoly(binwidth = 2.5)
+
+plot2 <- ggplot(mpg, aes(hwy)) + geom_freqpoly(binwidth = 1)
+
+plot1 + plot2
+```
+
+### Colorization
+```{r}
+ggplot(mpg, aes(displ, color = drv)) +
+  geom_freqpoly(binwidth = 0.5)
+```
+
+### Facetting
+```{r}
+ggplot(mpg, aes(displ, fill = drv)) +
+  geom_histogram(binwidth = 0.5) +
+  facet_wrap(~drv, ncol = 1)
+```
+
+## Bar charts
+
+The discrete analogue of the histogram is bar chart, geom_bar().
+```{r}
+ggplot(mpg, aes(manufacturer)) + geom_bar()
+```
+
+The geom function bar is used for unsummarized data, and each observation contributes one unit to the height of each bar. For geom_bar(), the default behavior is to count the rows for each x value. So it doesn't expect a y-value, since it's going to count that up itself. In fact, it will flag a warning if you give it one.
+
+If we explicitly say, stat = "identity" in geom_bar(), then we are telling ggplot2 to skip the aggregation as we will be providing the y values. Let's see
+```{r}
+ggplot(mpg, aes(manufacturer, cty)) +
+  geom_bar(stat = "identity")
+```
+
+
+### Presummarized data
+```{r}
+enzyme <- data.frame(
+  Genes = c("Gene A", "Gene B", "Gene C"),
+  Expression = c(4.2, 9.7, 6.6)
+)
+
+enzyme
+```
+
+```{r}
+plot1 <- ggplot(enzyme, aes(Genes, Expression)) +
+  geom_bar(stat = "identity")
+
+plot2 <- ggplot(enzyme, aes(Genes, Expression)) +
+  geom_point()
+
+plot1 + plot2
+```
+
+Here we are telling geom_bar to not run the default stat which bins and counts the data.
+
+## Time series (line and path)
+For time series, line and path plots are typically used. Line plot join the points from left to right, while path plot join them in the order that they appear in the dataset.
+```{r}
+head(economics)
+```
+
+### Lines plot
+
+```{r}
+ggplot(economics, aes(date, unemploy)) + geom_line()
+```
+
+### Path plot
+
+Let's plot unemployment rate vs. length of unemployment and join the individual observations with a path.
+```{r}
+ggplot(economics, aes(unemploy/pop, uempmed)) +
+  geom_path() +
+  geom_point()
+```
+
+```{r}
+ggplot(economics, aes(unemploy/pop, uempmed)) +
+  geom_path(color = "gray60") +
+  geom_point(aes(color = date))
+```
+
+# Modifying the axes
+```{r}
+ggplot(mpg, aes(cty, hwy)) + 
+  geom_point(alpha = 1/3)
+```
+
+## Giving axes labels
+
+```{r}
+ggplot(mpg, aes(cty, hwy)) + 
+  geom_point(alpha = 1/3) +
+  xlab("City driving ") +
+  ylab("Highway driving")
+```
+
+## Rmoving axes labels
+```{r}
+ggplot(mpg, aes(cty, hwy)) + 
+  geom_point(alpha = 1/3) +
+  xlab(NULL) +
+  ylab(NULL)
+```
+
+# Modifying the limits of axes
+
+```{r}
+ggplot(mpg, aes(drv, hwy)) + 
+  geom_jitter(width = 0.25)
+```
+
+## Giving axes limits
+```{r}
+ggplot(mpg, aes(drv, hwy)) + 
+  geom_jitter(width = 0.25) +
+  xlim("f", "r") +
+  ylim(25, 35)
+```
+
+We get a warning message saying there are 151 rows that contains missing values (geom_point).
+
+## Set NA to one limit
+```{r}
+ggplot(mpg, aes(drv, hwy)) + 
+  geom_jitter(width = 0.25, na.rm = TRUE) +
+  ylim(NA, 35)
+```
+
+Here we removed the NAs/missing values present in the rows from the jitter plot.
+
+# Output
+
+We can save the plot to a variable and manipulate it. Like the following ~>
+```{r}
+plot <- ggplot(mpg, aes(displ, hwy, color = factor(cyl))) +
+  geom_point()
+
+plot
+```
+
+## Saving as png
+
+To save the last plot, we will be using ggsave with defined height and width.
+```{r}
+ggsave("neko.png", width = 5, height = 5)
+```
+
+## Summarize
+
+```{r}
+summary(plot)
+```
